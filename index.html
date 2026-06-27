@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon CRM</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f7f6;--surface:#fff;--border:#ebebea;--border-strong:#d9d9d7;
+  --text:#111110;--text-sec:#6f6e6b;--text-muted:#b0afa9;
+  --r:10px;--r-lg:18px;
+  --sh-sm:0 1px 4px rgba(0,0,0,.06),0 0 0 1px rgba(0,0,0,.04);
+  --sh:0 4px 16px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.04);
+  --sh-lg:0 12px 40px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);
+  --danger:#e5484d;--success:#30a46c;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+
+/* ── LAYOUT ── */
+.shell{display:flex;flex-direction:column;min-height:100vh}
+
+/* ── GLOBAL TOPBAR ── */
+.gtopbar{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 28px;display:flex;align-items:center;gap:0;
+  position:sticky;top:0;z-index:40;height:56px;
+}
+.gtopbar-brand{display:flex;align-items:center;gap:10px;margin-right:32px;flex-shrink:0}
+.gtopbar-logo{width:32px;height:32px;border-radius:9px;background:var(--text);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px}
+.gtopbar-name{font-size:14px;font-weight:700;letter-spacing:-.2px}
+
+/* ── MANDANT TABS ── */
+.mandant-tabs{display:flex;align-items:stretch;gap:2px;flex:1;overflow-x:auto;scrollbar-width:none;height:56px}
+.mandant-tabs::-webkit-scrollbar{display:none}
+.m-tab{
+  display:flex;align-items:center;gap:8px;padding:0 16px;
+  cursor:pointer;border:none;background:none;font-family:inherit;
+  font-size:13px;font-weight:500;color:var(--text-muted);
+  white-space:nowrap;transition:all .15s;position:relative;flex-shrink:0;
+  border-bottom:2px solid transparent;
+}
+.m-tab:hover{color:var(--text-sec);background:var(--bg)}
+.m-tab.active{color:var(--text);font-weight:700}
+.m-tab.active::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--tab-color,#111);border-radius:2px 2px 0 0}
+.m-tab-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.m-tab-count{font-size:11px;font-weight:700;padding:1px 7px;border-radius:20px;background:var(--bg)}
+.m-tab-add{
+  display:flex;align-items:center;gap:6px;padding:0 14px;
+  cursor:pointer;border:none;background:none;font-family:inherit;
+  font-size:12px;font-weight:600;color:var(--text-muted);white-space:nowrap;
+  margin-left:4px;border-radius:var(--r);transition:all .15s;flex-shrink:0;
+}
+.m-tab-add:hover{background:var(--bg);color:var(--text-sec)}
+
+.gtopbar-actions{display:flex;gap:8px;margin-left:16px;flex-shrink:0}
+
+/* ── SUB NAV (pipeline / clients) ── */
+.subnav{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 28px;display:flex;align-items:center;justify-content:space-between;
+  gap:16px;flex-wrap:wrap;min-height:48px;
+}
+.subnav-tabs{display:flex;gap:2px}
+.subnav-tab{
+  padding:8px 14px;border-radius:var(--r);border:none;background:none;
+  font-family:inherit;font-size:13px;font-weight:500;color:var(--text-muted);
+  cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px;
+}
+.subnav-tab:hover{background:var(--bg);color:var(--text-sec)}
+.subnav-tab.active{background:var(--bg);color:var(--text);font-weight:700}
+.subnav-right{display:flex;gap:8px;align-items:center}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:inherit}
+.btn-dark{background:var(--text);color:#fff}
+.btn-dark:hover{background:#2c2c2a}
+.btn-ghost{background:none;border:1.5px solid var(--border-strong);color:var(--text-sec)}
+.btn-ghost:hover{background:var(--surface);color:var(--text);border-color:var(--text)}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-themed{color:#fff;border:none}
+
+/* ── CONTENT ── */
+.content{padding:24px 28px 48px;flex:1}
+
+/* ── MANDANT HERO (en haut de la vue mandant actif) ── */
+.mandant-hero{border-radius:var(--r-lg);padding:24px 28px;margin-bottom:24px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;animation:fadeUp .2s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.mh-left{display:flex;align-items:center;gap:16px}
+.mh-logo{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;flex-shrink:0}
+.mh-name{font-size:20px;font-weight:800;letter-spacing:-.4px}
+.mh-meta{font-size:12px;opacity:.7;margin-top:3px;display:flex;gap:12px;flex-wrap:wrap}
+.mh-meta span{display:flex;align-items:center;gap:4px}
+.mh-stats{display:flex;gap:24px;flex-wrap:wrap}
+.mh-stat{text-align:right}
+.mh-stat-val{font-size:20px;font-weight:800;letter-spacing:-.5px}
+.mh-stat-lbl{font-size:11px;opacity:.65;margin-top:1px;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+.mh-actions{display:flex;gap:8px;align-self:flex-start}
+
+/* ── STATS ROW ── */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:24px}
+.stat{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--sh-sm);padding:18px 20px;transition:box-shadow .2s}
+.stat:hover{box-shadow:var(--sh)}
+.stat-num{font-size:28px;font-weight:800;letter-spacing:-1px;line-height:1}
+.stat-lbl{font-size:11px;color:var(--text-muted);margin-top:5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+
+/* ── PIPELINE ── */
+.pipe-scroll{overflow-x:auto;padding-bottom:8px}
+.pipe-board{display:flex;gap:12px;min-width:max-content}
+.pipe-col{width:220px;flex-shrink:0}
+.pipe-col-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:0 2px}
+.pipe-col-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.pipe-col-count{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--text-muted)}
+.pipe-card{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--sh-sm);padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:all .15s;border:1.5px solid transparent}
+.pipe-card:hover{box-shadow:var(--sh);transform:translateY(-1px)}
+.pc-name{font-size:13px;font-weight:700;margin-bottom:8px;letter-spacing:-.1px}
+.pc-row{font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:5px;margin-top:4px}
+.pc-val{font-size:16px;font-weight:800;letter-spacing:-.5px;margin-top:10px}
+.pc-bar{height:3px;background:var(--border);border-radius:2px;margin-top:8px;overflow:hidden}
+.pc-bar-fill{height:3px;border-radius:2px}
+.pipe-add{width:100%;border:1.5px dashed var(--border-strong);background:none;border-radius:var(--r-lg);padding:10px;font-size:12px;font-weight:600;color:var(--text-muted);cursor:pointer;font-family:inherit;transition:all .15s}
+.pipe-add:hover{background:var(--surface);color:var(--text-sec)}
+
+/* ── TABLE ── */
+.table-wrap{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--sh-sm);overflow:hidden}
+.t-table{width:100%;border-collapse:collapse;font-size:13px}
+.t-table th{text-align:left;padding:11px 16px;background:var(--bg);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);border-bottom:1px solid var(--border);white-space:nowrap}
+.t-table td{padding:13px 16px;border-bottom:1px solid var(--border);vertical-align:middle}
+.t-table tr:last-child td{border-bottom:none}
+.t-table tbody tr{cursor:pointer;transition:background .1s}
+.t-table tbody tr:hover td{background:var(--bg)}
+.nc strong{font-weight:600}
+.nc span{font-size:11px;color:var(--text-muted);display:block;margin-top:1px}
+.val-cell{font-size:15px;font-weight:800;letter-spacing:-.3px}
+.com-cell{font-size:13px;font-weight:600;color:var(--success)}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap}
+
+/* ── FILTER ── */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;align-items:center}
+.filter-bar select,.filter-bar input{font-size:13px;font-weight:500;padding:7px 12px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--surface);color:var(--text);outline:none;font-family:inherit}
+.filter-bar input{flex:1;min-width:180px}
+.filter-bar select:focus,.filter-bar input:focus{border-color:var(--text)}
+
+/* ── MODAL ── */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px)}
+.modal-ov.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--sh-lg);padding:28px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:scaleIn .18s ease}
+@keyframes scaleIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
+.modal-title{font-size:20px;font-weight:800;letter-spacing:-.4px;margin-bottom:22px}
+.f-row{margin-bottom:13px}
+.f-row label{font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
+.f-row input,.f-row select,.f-row textarea{width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;background:var(--bg);color:var(--text);outline:none;font-family:inherit;transition:border-color .15s}
+.f-row input:focus,.f-row select:focus,.f-row textarea:focus{border-color:var(--text);background:var(--surface)}
+.f-row textarea{resize:vertical;min-height:70px}
+.f-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid var(--border)}
+
+/* THÈME */
+.theme-sec{margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
+.theme-sec-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-sec);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.swatches{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.swatch{width:34px;height:34px;border-radius:9px;cursor:pointer;border:3px solid transparent;transition:all .15s}
+.swatch:hover{transform:scale(1.12)}
+.swatch.sel{border-color:var(--text);box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--text)}
+.color-row{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px}
+.cpick{display:flex;flex-direction:column;gap:5px}
+.cpick label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted)}
+.cpick input[type=color]{width:46px;height:40px;border-radius:var(--r);border:1.5px solid var(--border);cursor:pointer;padding:3px;background:var(--bg)}
+.style-row{display:flex;gap:4px}
+.style-btn{flex:1;padding:7px 4px;border-radius:var(--r);border:1.5px solid var(--border);background:none;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--text-muted);transition:all .15s}
+.style-btn.active{background:var(--text);color:#fff;border-color:var(--text)}
+.theme-prev{border-radius:var(--r);padding:14px 18px;transition:all .3s;margin-top:10px}
+.theme-prev-name{font-size:14px;font-weight:800;letter-spacing:-.3px}
+.theme-prev-sub{font-size:11px;opacity:.65;margin-top:2px}
+
+/* ── DRAWER ── */
+.drawer-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:150;backdrop-filter:blur(1px)}
+.drawer-ov.open{display:block}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:380px;max-width:95vw;background:var(--surface);z-index:151;overflow-y:auto;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);box-shadow:var(--sh-lg)}
+.drawer.open{transform:translateX(0)}
+.drawer-close{position:sticky;top:0;display:flex;justify-content:flex-end;padding:16px 16px 0;background:var(--surface);z-index:2}
+.drawer-close button{width:32px;height:32px;border-radius:var(--r);background:var(--bg);border:none;cursor:pointer;color:var(--text-sec);display:flex;align-items:center;justify-content:center;font-size:16px}
+.drawer-close button:hover{background:var(--border);color:var(--text)}
+.drawer-body{padding:0 24px 32px}
+.dr-sec{padding:14px 0;border-bottom:1px solid var(--border)}
+.dr-sec:last-child{border-bottom:none}
+.dr-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:7px}
+.dr-val{font-size:13px;line-height:1.6}
+.dr-amount{font-size:26px;font-weight:800;letter-spacing:-.8px;margin:3px 0 2px}
+.stage-btns{display:flex;flex-direction:column;gap:5px;margin-top:10px}
+.s-btn{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r);border:1.5px solid var(--border);background:none;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--text-sec);text-align:left;transition:all .12s}
+.s-btn:hover{background:var(--bg)}
+.s-btn.active{color:var(--text);background:var(--bg);border-color:var(--text)}
+.dr-actions{display:flex;flex-direction:column;gap:7px;margin-top:16px}
+.dr-act{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:var(--r-lg);background:var(--bg);border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--text);transition:background .1s;width:100%;text-align:left}
+.dr-act:hover{background:var(--border)}
+.dr-act.del{color:var(--danger)}
+.dr-act.del:hover{background:#fef2f2}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:56px 24px;color:var(--text-muted)}
+.empty i{font-size:44px;opacity:.25;display:block;margin-bottom:12px}
+.empty p{font-size:14px}
+
+/* ── OVERVIEW (onglet "Tous") ── */
+.overview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-bottom:28px}
+.ov-card{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--sh-sm);overflow:hidden;cursor:pointer;transition:all .2s}
+.ov-card:hover{box-shadow:var(--sh);transform:translateY(-2px)}
+.ov-card-top{padding:18px 18px 14px}
+.ov-card-strip{height:4px}
+.ov-logo{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;margin-bottom:12px}
+.ov-name{font-size:14px;font-weight:700;letter-spacing:-.2px;margin-bottom:2px}
+.ov-sector{font-size:11px;color:var(--text-muted);font-weight:500}
+.ov-card-bottom{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--border)}
+.ov-stat{padding:10px 14px;border-right:1px solid var(--border)}
+.ov-stat:last-child,.ov-stat:nth-child(2n){border-right:none}
+.ov-stat-val{font-size:15px;font-weight:700;letter-spacing:-.3px}
+.ov-stat-lbl{font-size:10px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-top:1px}
+
+@media(max-width:768px){
+  .gtopbar{padding:0 16px}
+  .content{padding:16px 16px 32px}
+  .f-grid{grid-template-columns:1fr}
+  .mh-stats{display:none}
+  .subnav{padding:0 16px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- GLOBAL TOPBAR avec onglets mandants -->
+<header class="gtopbar">
+  <div class="gtopbar-brand">
+    <div class="gtopbar-logo"><i class="ti ti-briefcase"></i></div>
+    <span class="gtopbar-name">Mon CRM</span>
+  </div>
+
+  <div class="mandant-tabs" id="mandant-tabs">
+    <!-- généré par JS -->
+  </div>
+
+  <button class="m-tab-add" onclick="openModal('company')">
+    <i class="ti ti-plus"></i> Mandant
+  </button>
+
+  <div class="gtopbar-actions">
+    <button class="btn btn-dark" onclick="openModal('client')">
+      <i class="ti ti-plus"></i> Nouveau client
+    </button>
+  </div>
+</header>
+
+<!-- SOUS-NAV (pipeline / clients) — masqué sur "Tous" -->
+<div class="subnav" id="subnav" style="display:none">
+  <div class="subnav-tabs">
+    <button class="subnav-tab active" id="sn-overview" onclick="switchSub('overview',this)">
+      <i class="ti ti-layout-grid"></i> Aperçu
+    </button>
+    <button class="subnav-tab" id="sn-pipeline" onclick="switchSub('pipeline',this)">
+      <i class="ti ti-layout-columns"></i> Pipeline
+    </button>
+    <button class="subnav-tab" id="sn-clients" onclick="switchSub('clients',this)">
+      <i class="ti ti-users"></i> Clients
+    </button>
+  </div>
+  <div class="subnav-right">
+    <button class="btn btn-sm btn-ghost" id="btn-edit-mandant" onclick="editCurrentMandant()">
+      <i class="ti ti-edit"></i> Modifier le mandant
+    </button>
+    <button class="btn btn-sm btn-dark" onclick="openModal('client',null,currentCoId)">
+      <i class="ti ti-plus"></i> Ajouter client
+    </button>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- stats globales -->
+  <div class="stats-row" id="global-stats">
+    <div class="stat"><div class="stat-num" id="s-mandants">0</div><div class="stat-lbl">Mandants</div></div>
+    <div class="stat"><div class="stat-num" id="s-clients">0</div><div class="stat-lbl">Clients</div></div>
+    <div class="stat"><div class="stat-num" id="s-pipeline">—</div><div class="stat-lbl">Pipeline actif</div></div>
+    <div class="stat"><div class="stat-num" id="s-commissions">—</div><div class="stat-lbl">Commissions</div></div>
+    <div class="stat"><div class="stat-num" id="s-signes">0</div><div class="stat-lbl">Signés</div></div>
+  </div>
+
+  <!-- VUE TOUS -->
+  <section id="view-all">
+    <div class="overview-grid" id="overview-grid"></div>
+  </section>
+
+  <!-- VUE MANDANT : aperçu -->
+  <section id="view-overview" style="display:none">
+    <div id="mandant-hero-area"></div>
+    <div id="mandant-overview-content"></div>
+  </section>
+
+  <!-- VUE MANDANT : pipeline -->
+  <section id="view-pipeline" style="display:none">
+    <div id="mandant-hero-pip"></div>
+    <div class="pipe-scroll"><div class="pipe-board" id="pipe-board"></div></div>
+  </section>
+
+  <!-- VUE MANDANT : clients -->
+  <section id="view-clients" style="display:none">
+    <div id="mandant-hero-cl"></div>
+    <div class="filter-bar">
+      <select id="cl-stage-f" onchange="renderClients()"><option value="">Toutes les étapes</option></select>
+      <input id="cl-q" placeholder="Rechercher…" oninput="renderClients()">
+    </div>
+    <div class="table-wrap">
+      <table class="t-table"><thead><tr>
+        <th>Contact</th><th>Société</th><th>Produit</th><th>Valeur</th><th>Commission</th><th>Étape</th><th>Prochain RDV</th>
+      </tr></thead><tbody id="cl-body"></tbody></table>
+      <div class="empty" id="cl-empty" style="display:none"><i class="ti ti-users"></i><p>Aucun client trouvé.</p></div>
+    </div>
+  </section>
+
+</div><!-- /content -->
+</div><!-- /shell -->
+
+<!-- ── MODAL ── -->
+<div class="modal-ov" id="modal-ov">
+<div class="modal">
+  <div class="modal-title" id="modal-title">Nouveau</div>
+
+  <div id="form-company">
+    <div class="f-row"><label>Nom de l'entreprise mandante</label><input id="co-name" placeholder="TechSolutions SA"></div>
+    <div class="f-row"><label>Secteur</label>
+      <select id="co-sector">
+        <option>Technologie / SaaS</option><option>Assurance</option><option>Immobilier</option>
+        <option>Finance</option><option>Industrie</option><option>Santé</option>
+        <option>Télécoms</option><option>Distribution</option><option>Services</option><option>Autre</option>
+      </select>
+    </div>
+    <div class="f-grid">
+      <div class="f-row"><label>Commission (%)</label><input id="co-com" type="number" min="0" max="100" step="0.5" placeholder="10"></div>
+      <div class="f-row"><label>Téléphone</label><input id="co-tel" placeholder="+33 1 00 00 00 00"></div>
+    </div>
+    <div class="f-row"><label>Contact référent</label><input id="co-ref" placeholder="Prénom Nom — Poste"></div>
+    <div class="f-row"><label>Notes</label><textarea id="co-notes" placeholder="Conditions, zone, catalogue…"></textarea></div>
+
+    <div class="theme-sec">
+      <div class="theme-sec-title"><i class="ti ti-palette" style="font-size:15px"></i> Thème de l'onglet</div>
+      <div class="swatches" id="swatches"></div>
+      <div class="color-row">
+        <div class="cpick"><label>Couleur principale</label><input type="color" id="co-c1" value="#111110"></div>
+        <div class="cpick"><label>Fond / secondaire</label><input type="color" id="co-c2" value="#f7f7f6"></div>
+        <div style="flex:1">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:6px">Style</div>
+          <div class="style-row" id="style-row">
+            <button class="style-btn active" data-s="light" onclick="pickStyle(this)">Clair</button>
+            <button class="style-btn" data-s="dark" onclick="pickStyle(this)">Sombre</button>
+            <button class="style-btn" data-s="vivid" onclick="pickStyle(this)">Vivid</button>
+          </div>
+        </div>
+      </div>
+      <div class="theme-prev" id="theme-prev">
+        <div class="theme-prev-name" id="prev-name">Votre mandant</div>
+        <div class="theme-prev-sub">Aperçu de l'onglet et du header</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="form-client" style="display:none">
+    <div class="f-grid">
+      <div class="f-row"><label>Prénom Nom</label><input id="cl-name" placeholder="Jean Martin"></div>
+      <div class="f-row"><label>Société cliente</label><input id="cl-co" placeholder="Groupe Martin SARL"></div>
+    </div>
+    <div class="f-grid">
+      <div class="f-row"><label>Téléphone</label><input id="cl-tel" placeholder="+33 6 00 00 00 00"></div>
+      <div class="f-row"><label>Email</label><input id="cl-email" placeholder="jean@exemple.fr"></div>
+    </div>
+    <div class="f-row"><label>Mandant représenté</label><select id="cl-mandant"><option value="">— Choisir —</option></select></div>
+    <div class="f-row"><label>Produit / Service</label><input id="cl-product" placeholder="Logiciel CRM, Assurance…"></div>
+    <div class="f-grid">
+      <div class="f-row"><label>Valeur (€)</label><input id="cl-val" type="number" min="0" placeholder="5000"></div>
+      <div class="f-row"><label>Étape</label>
+        <select id="cl-stage-i">
+          <option value="0">Prospection</option><option value="1">Qualification</option>
+          <option value="2">Proposition</option><option value="3">Négociation</option><option value="4">Signé</option>
+        </select>
+      </div>
+    </div>
+    <div class="f-row"><label>Prochain contact</label><input id="cl-next" type="date"></div>
+    <div class="f-row"><label>Notes</label><textarea id="cl-notes" placeholder="Contexte, besoins, décideur…"></textarea></div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
+    <button class="btn btn-dark" onclick="save()">Enregistrer</button>
+  </div>
+</div>
+</div>
+
+<!-- ── DRAWER ── -->
+<div class="drawer-ov" id="drawer-ov" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-close"><button onclick="closeDrawer()"><i class="ti ti-x"></i></button></div>
+  <div class="drawer-body" id="drawer-body"></div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const STAGES=[
+  {id:0,name:'Prospection',   prob:10, color:'#8e8e8e'},
+  {id:1,name:'Qualification', prob:30, color:'#3b82f6'},
+  {id:2,name:'Proposition',   prob:55, color:'#f59e0b'},
+  {id:3,name:'Négociation',   prob:75, color:'#8b5cf6'},
+  {id:4,name:'Signé',         prob:100,color:'#30a46c'},
+];
+const PALETTES=[
+  {c1:'#111110',c2:'#f7f7f6',style:'light'},{c1:'#0369a1',c2:'#e0f2fe',style:'light'},
+  {c1:'#15803d',c2:'#dcfce7',style:'light'},{c1:'#92400e',c2:'#fef3c7',style:'light'},
+  {c1:'#9d174d',c2:'#fdf2f8',style:'light'},{c1:'#6d28d9',c2:'#f5f3ff',style:'light'},
+  {c1:'#334155',c2:'#f1f5f9',style:'light'},{c1:'#ea580c',c2:'#fff7ed',style:'light'},
+  {c1:'#818cf8',c2:'#1e1b4b',style:'dark'}, {c1:'#4ade80',c2:'#052e16',style:'dark'},
+  {c1:'#6d28d9',c2:'#c4b5fd',style:'vivid'},{c1:'#ef4444',c2:'#fef2f2',style:'vivid'},
+];
+let companies=[
+  {id:1,name:'TechVision Pro',sector:'Technologie / SaaS',com:12,tel:'+33 1 40 00 01',ref:'Sophie Laurent — Dir. Commerciale',notes:'Suite CRM et RH.',theme:{c1:'#0369a1',c2:'#e0f2fe',style:'light'}},
+  {id:2,name:"Assur'Flex",    sector:'Assurance',         com:8, tel:'+33 1 40 00 02',ref:'Pierre Morel — Partenariats',      notes:'Assurance pro.',  theme:{c1:'#15803d',c2:'#dcfce7',style:'light'}},
+  {id:3,name:'ImmoSud',       sector:'Immobilier',        com:5, tel:'+33 4 90 00 03',ref:'Claire Bonnet — Agence Manager',  notes:'Programmes neufs.',theme:{c1:'#92400e',c2:'#fef3c7',style:'light'}},
+];
+let clients=[
+  {id:1,name:'Marc Lefebvre',    co:'Groupe Lefebvre',   tel:'+33 6 11 22 33 44',email:'m.lefebvre@ex.fr', mandant:1,product:'CRM Enterprise',      val:18000, stage:3,next:'2025-07-03',notes:'Décideur identifié. RDV démo le 3 juillet.'},
+  {id:2,name:'Isabelle Renaud',  co:'Cabinet Renaud',    tel:'+33 6 55 66 77 88',email:'i.renaud@ex.fr',   mandant:1,product:'Suite RH SaaS',        val:7200,  stage:2,next:'',          notes:'Intéressée par le module paie.'},
+  {id:3,name:'Thomas Garnier',   co:'SARL Garnier BTP',  tel:'+33 6 99 00 11 22',email:'t.garnier@ex.fr',  mandant:2,product:'Assurance décennale',   val:4500,  stage:1,next:'2025-07-10',notes:'Appel découverte. À recontacter.'},
+  {id:4,name:"Hôtel des Acacias",co:'Hôtel Acacias SAS', tel:'+33 4 77 88 99 00',email:'direction@ex.fr',  mandant:2,product:'Assurance multirisque', val:3200,  stage:4,next:'',          notes:'Contrat signé. Renouvellement nov.'},
+  {id:5,name:'Emma Vidal',       co:'Particulier',        tel:'+33 6 33 44 55 66',email:'emma@ex.fr',       mandant:3,product:'Appartement T3 neuf',   val:210000,stage:2,next:'2025-07-15',notes:'Attend validation prêt.'},
+];
+let nextCoId=4,nextClId=6,modalType=null,editId=null;
+let currentCoId=null; // null = vue "Tous"
+let currentSub='overview'; // overview | pipeline | clients
+let currentStyle='light';
+
+// ── THEME ─────────────────────────────────────────────────────────────────────
+function lum(h){const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return .299*r+.587*g+.114*b}
+function blend(h,white,t){const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);const wr=white?255:0;return '#'+[r,g,b].map((v,i)=>Math.round(v+(wr-v)*t).toString(16).padStart(2,'0')).join('')}
+function textOn(h){return lum(h)>140?'#111110':'#ffffff'}
+function resolveTheme(th){
+  const{c1,c2,style}=th;
+  if(style==='dark') return{hBg:c2,hText:c1,hSub:blend(c1,'#fff',0.35),acc:c1,logoBg:c1,logoText:textOn(c1),tabColor:c1,badgeBg:blend(c1,'#fff',0.88),badgeText:c1};
+  if(style==='vivid'){const lt=lum(c1)>140;return{hBg:c1,hText:textOn(c1),hSub:lt?blend(c1,'#000',0.3):blend(c1,'#fff',0.4),acc:lt?blend(c1,'#000',0.2):c1,logoBg:c2,logoText:textOn(c2),tabColor:lt?blend(c1,'#000',0.2):c2,badgeBg:c2,badgeText:textOn(c2)};}
+  return{hBg:c2,hText:blend(c1,'#000',0.15),hSub:c1,acc:c1,logoBg:c1,logoText:'#ffffff',tabColor:c1,badgeBg:c2,badgeText:blend(c1,'#000',0.1)};
+}
+function initials(n){return n.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase()}
+function fmtEur(n){return n>=1000000?(n/1000000).toFixed(1)+'M €':n>=1000?(n/1000).toFixed(n>=10000?0:1)+'k €':n+' €'}
+function calcCom(c){const co=companies.find(x=>x.id===c.mandant);return co?Math.round(c.val*co.com/100):0}
+function coById(id){return companies.find(x=>x.id===id)}
+
+// ── STATS ─────────────────────────────────────────────────────────────────────
+function updateStats(){
+  const active=clients.filter(c=>c.stage<4),pipe=active.reduce((a,c)=>a+c.val,0);
+  document.getElementById('s-mandants').textContent=companies.length;
+  document.getElementById('s-clients').textContent=clients.length;
+  document.getElementById('s-pipeline').textContent=fmtEur(pipe);
+  document.getElementById('s-commissions').textContent=fmtEur(clients.reduce((a,c)=>a+calcCom(c),0));
+  document.getElementById('s-signes').textContent=clients.filter(c=>c.stage===4).length;
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function renderTabs(){
+  const bar=document.getElementById('mandant-tabs');bar.innerHTML='';
+  // Onglet "Tous"
+  const all=document.createElement('button');
+  all.className='m-tab'+(currentCoId===null?' active':'');
+  all.style.setProperty('--tab-color','#111110');
+  all.innerHTML=`<i class="ti ti-layout-grid" style="font-size:15px"></i> Tous`;
+  all.onclick=()=>selectMandant(null);
+  bar.appendChild(all);
+  // Onglets mandants
+  companies.forEach(co=>{
+    const th=resolveTheme(co.theme||{c1:'#111110',c2:'#f7f7f6',style:'light'});
+    const cls=clients.filter(c=>c.mandant===co.id);
+    const tab=document.createElement('button');
+    tab.className='m-tab'+(currentCoId===co.id?' active':'');
+    tab.style.setProperty('--tab-color',th.tabColor);
+    if(currentCoId===co.id) tab.style.color=th.tabColor;
+    tab.innerHTML=`<span class="m-tab-dot" style="background:${th.tabColor}"></span>${co.name}<span class="m-tab-count" style="background:${th.badgeBg};color:${th.badgeText}">${cls.length}</span>`;
+    tab.onclick=()=>selectMandant(co.id);
+    bar.appendChild(tab);
+  });
+}
+
+function selectMandant(coId){
+  currentCoId=coId;
+  const subnav=document.getElementById('subnav');
+  renderTabs();
+  if(coId===null){
+    subnav.style.display='none';
+    showViews(['all']);
+    currentSub='overview';
+    renderOverview();
+  } else {
+    subnav.style.display='';
+    switchSub(currentSub==='clients'?'clients':currentSub==='pipeline'?'pipeline':'overview', document.getElementById('sn-'+( currentSub==='clients'?'clients':currentSub==='pipeline'?'pipeline':'overview')));
+  }
+}
+
+function switchSub(sub,btn){
+  currentSub=sub;
+  document.querySelectorAll('.subnav-tab').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  if(sub==='overview') {showViews(['overview']);renderMandantOverview();}
+  if(sub==='pipeline') {showViews(['pipeline']);renderPipeline();}
+  if(sub==='clients')  {showViews(['clients']); renderClients();}
+}
+
+function showViews(active){
+  ['all','overview','pipeline','clients'].forEach(v=>{
+    document.getElementById('view-'+v).style.display=active.includes(v)?'':'none';
+  });
+}
+
+// ── VUE TOUS ──────────────────────────────────────────────────────────────────
+function renderOverview(){
+  const grid=document.getElementById('overview-grid');grid.innerHTML='';
+  if(!companies.length){
+    grid.innerHTML='<div class="empty" style="grid-column:1/-1"><i class="ti ti-building"></i><p>Aucun mandant. Cliquez sur "+ Mandant".</p></div>';return;
+  }
+  companies.forEach(co=>{
+    const th=resolveTheme(co.theme||{c1:'#111110',c2:'#f7f7f6',style:'light'});
+    const cls=clients.filter(c=>c.mandant===co.id);
+    const pipe=cls.filter(c=>c.stage<4).reduce((a,c)=>a+c.val,0);
+    const totalCom=cls.reduce((a,c)=>a+calcCom(c),0);
+    const signed=cls.filter(c=>c.stage===4).length;
+    const card=document.createElement('div');card.className='ov-card';
+    card.onclick=()=>selectMandant(co.id);
+    card.innerHTML=`
+      <div class="ov-card-strip" style="background:${th.tabColor}"></div>
+      <div class="ov-card-top" style="background:${th.hBg}">
+        <div class="ov-logo" style="background:${th.logoBg};color:${th.logoText}">${initials(co.name)}</div>
+        <div class="ov-name" style="color:${th.hText}">${co.name}</div>
+        <div class="ov-sector" style="color:${th.hSub}">${co.sector} · ${co.com}% commission</div>
+      </div>
+      <div class="ov-card-bottom">
+        <div class="ov-stat"><div class="ov-stat-val">${cls.length}</div><div class="ov-stat-lbl">Clients</div></div>
+        <div class="ov-stat"><div class="ov-stat-val">${fmtEur(pipe)}</div><div class="ov-stat-lbl">Pipeline</div></div>
+        <div class="ov-stat"><div class="ov-stat-val">${signed}</div><div class="ov-stat-lbl">Signés</div></div>
+        <div class="ov-stat"><div class="ov-stat-val">${fmtEur(totalCom)}</div><div class="ov-stat-lbl">Commissions</div></div>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ── HERO MANDANT (réutilisable) ────────────────────────────────────────────────
+function heroHTML(co){
+  const th=resolveTheme(co.theme||{c1:'#111110',c2:'#f7f7f6',style:'light'});
+  const cls=clients.filter(c=>c.mandant===co.id);
+  const pipe=cls.filter(c=>c.stage<4).reduce((a,c)=>a+c.val,0);
+  const totalCom=cls.reduce((a,c)=>a+calcCom(c),0);
+  return `<div class="mandant-hero" style="background:${th.hBg}">
+    <div class="mh-left">
+      <div class="mh-logo" style="background:${th.logoBg};color:${th.logoText}">${initials(co.name)}</div>
+      <div>
+        <div class="mh-name" style="color:${th.hText}">${co.name}</div>
+        <div class="mh-meta" style="color:${th.hSub}">
+          <span><i class="ti ti-tag" style="font-size:12px"></i>${co.sector}</span>
+          <span><i class="ti ti-percentage" style="font-size:12px"></i>${co.com}% commission</span>
+          ${co.ref?`<span><i class="ti ti-user" style="font-size:12px"></i>${co.ref}</span>`:''}
+          ${co.tel?`<span><i class="ti ti-phone" style="font-size:12px"></i>${co.tel}</span>`:''}
+        </div>
+      </div>
+    </div>
+    <div class="mh-stats">
+      <div class="mh-stat"><div class="mh-stat-val" style="color:${th.hText}">${cls.length}</div><div class="mh-stat-lbl" style="color:${th.hSub}">Clients</div></div>
+      <div class="mh-stat"><div class="mh-stat-val" style="color:${th.hText}">${fmtEur(pipe)}</div><div class="mh-stat-lbl" style="color:${th.hSub}">Pipeline</div></div>
+      <div class="mh-stat"><div class="mh-stat-val" style="color:${th.hText}">${fmtEur(totalCom)}</div><div class="mh-stat-lbl" style="color:${th.hSub}">Commissions</div></div>
+    </div>
+  </div>`;
+}
+
+// ── VUE APERÇU MANDANT ────────────────────────────────────────────────────────
+function renderMandantOverview(){
+  const co=coById(currentCoId);if(!co)return;
+  const th=resolveTheme(co.theme||{c1:'#111110',c2:'#f7f7f6',style:'light'});
+  const cls=clients.filter(c=>c.mandant===co.id);
+  document.getElementById('mandant-hero-area').innerHTML=heroHTML(co);
+  const wrap=document.getElementById('mandant-overview-content');
+  if(!cls.length){wrap.innerHTML='<div class="empty"><i class="ti ti-user-plus"></i><p>Aucun client pour ce mandant.</p></div>';return;}
+  wrap.innerHTML=`<div class="table-wrap"><table class="t-table"><thead><tr>
+    <th>Contact</th><th>Société</th><th>Produit</th><th>Valeur</th><th>Commission</th><th>Étape</th><th>Prochain RDV</th>
+  </tr></thead><tbody>${cls.map(c=>`<tr onclick="openDrawer(${c.id})">
+    <td class="nc"><strong>${c.name}</strong><span>${c.tel}</span></td>
+    <td>${c.co}</td><td style="font-size:12px;color:var(--text-sec)">${c.product}</td>
+    <td class="val-cell" style="color:${th.acc}">${fmtEur(c.val)}</td>
+    <td class="com-cell">${fmtEur(calcCom(c))}</td>
+    <td><span class="badge" style="background:${STAGES[c.stage].color}18;color:${STAGES[c.stage].color}"><span style="width:6px;height:6px;border-radius:50%;background:${STAGES[c.stage].color}"></span>${STAGES[c.stage].name}</span></td>
+    <td style="font-size:12px;color:var(--text-muted)">${c.next||'—'}</td>
+  </tr>`).join('')}</tbody></table></div>`;
+}
+
+// ── PIPELINE ──────────────────────────────────────────────────────────────────
+function renderPipeline(){
+  const co=coById(currentCoId);if(!co)return;
+  const th=resolveTheme(co.theme||{c1:'#111110',c2:'#f7f7f6',style:'light'});
+  document.getElementById('mandant-hero-pip').innerHTML=heroHTML(co);
+  const board=document.getElementById('pipe-board');board.innerHTML='';
+  STAGES.forEach(stage=>{
+    const cards=clients.filter(c=>c.mandant===currentCoId&&c.stage===stage.id);
+    const col=document.createElement('div');col.className='pipe-col';
+    col.innerHTML=`<div class="pipe-col-head"><span class="pipe-col-title" style="color:${stage.color}">${stage.name}</span><span class="pipe-col-count">${cards.length}</span></div>`;
+    cards.forEach(c=>{
+      const card=document.createElement('div');card.className='pipe-card';card.onclick=()=>openDrawer(c.id);
+      card.innerHTML=`<div class="pc-name">${c.name}</div>
+        <div class="pc-row"><i class="ti ti-building" style="font-size:12px"></i>${c.co}</div>
+        <div class="pc-row"><i class="ti ti-package" style="font-size:12px"></i>${c.product}</div>
+        ${c.next?`<div class="pc-row"><i class="ti ti-calendar" style="font-size:12px"></i>${c.next}</div>`:''}
+        <div class="pc-val" style="color:${th.acc}">${fmtEur(c.val)}</div>
+        <div class="pc-bar"><div class="pc-bar-fill" style="width:${stage.prob}%;background:${stage.color}"></div></div>`;
+      col.appendChild(card);
+    });
+    const ab=document.createElement('button');ab.className='pipe-add';ab.textContent='+ Ajouter un client';
+    ab.onclick=()=>{openModal('client',null,currentCoId);document.getElementById('cl-stage-i').value=stage.id};
+    col.appendChild(ab);board.appendChild(col);
+  });
+}
+
+// ── CLIENTS ───────────────────────────────────────────────────────────────────
+function renderClients(){
+  const co=coById(currentCoId);if(!co)return;
+  const th=resolveTheme(co.theme||{c1:'#111110',c2:'#f7f7f6',style:'light'});
+  document.getElementById('mandant-hero-cl').innerHTML=heroHTML(co);
+  const stF=document.getElementById('cl-stage-f').value;
+  const q=document.getElementById('cl-q').value.toLowerCase();
+  let rows=clients.filter(c=>c.mandant===currentCoId);
+  if(stF!=='')rows=rows.filter(c=>c.stage===parseInt(stF));
+  if(q)rows=rows.filter(c=>c.name.toLowerCase().includes(q)||c.co.toLowerCase().includes(q)||c.product.toLowerCase().includes(q));
+  const tbody=document.getElementById('cl-body');tbody.innerHTML='';
+  document.getElementById('cl-empty').style.display=rows.length?'none':'';
+  rows.forEach(c=>{
+    const tr=document.createElement('tr');tr.onclick=()=>openDrawer(c.id);
+    tr.innerHTML=`<td class="nc"><strong>${c.name}</strong><span>${c.tel}</span></td>
+      <td>${c.co}</td>
+      <td style="font-size:12px;color:var(--text-sec)">${c.product}</td>
+      <td class="val-cell" style="color:${th.acc}">${fmtEur(c.val)}</td>
+      <td class="com-cell">${fmtEur(calcCom(c))}</td>
+      <td><span class="badge" style="background:${STAGES[c.stage].color}18;color:${STAGES[c.stage].color}"><span style="width:6px;height:6px;border-radius:50%;background:${STAGES[c.stage].color}"></span>${STAGES[c.stage].name}</span></td>
+      <td style="font-size:12px;color:var(--text-muted)">${c.next||'—'}</td>`;
+    tbody.appendChild(tr);
+  });
+  // remplir filtre étape
+  const ss=document.getElementById('cl-stage-f');
+  if(ss.options.length===1){STAGES.forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=s.name;ss.appendChild(o)})}
+}
+
+// ── DRAWER ────────────────────────────────────────────────────────────────────
+function openDrawer(id){
+  const c=clients.find(x=>x.id===id);const stage=STAGES[c.stage];
+  const co=coById(c.mandant);
+  const th=co&&co.theme?resolveTheme(co.theme):{acc:'#111110',hBg:'#f7f7f6',hText:'#111110',logoBg:'#111110',logoText:'#fff'};
+  document.getElementById('drawer-body').innerHTML=`
+    <div style="background:${th.hBg};margin:0 -24px 20px;padding:20px 24px">
+      <div style="font-size:20px;font-weight:800;letter-spacing:-.5px;color:${th.hText};margin-bottom:3px">${c.name}</div>
+      <div style="font-size:13px;color:${th.hSub||th.hText};opacity:.75;margin-bottom:10px">${c.co}</div>
+      <span class="badge" style="background:${th.logoBg};color:${th.logoText};font-size:12px">${co?co.name:'—'}</span>
+    </div>
+    <div class="dr-sec">
+      <div class="dr-lbl">Contact</div>
+      <div class="dr-val"><i class="ti ti-phone" style="font-size:13px;color:var(--text-muted);margin-right:6px"></i>${c.tel||'—'}</div>
+      <div class="dr-val" style="margin-top:5px"><i class="ti ti-mail" style="font-size:13px;color:var(--text-muted);margin-right:6px"></i>${c.email||'—'}</div>
+      ${c.next?`<div class="dr-val" style="margin-top:5px"><i class="ti ti-calendar" style="font-size:13px;color:var(--text-muted);margin-right:6px"></i>Prochain contact : <strong>${c.next}</strong></div>`:''}
+    </div>
+    <div class="dr-sec">
+      <div class="dr-lbl">Affaire — ${c.product}</div>
+      <div class="dr-amount" style="color:${th.acc}">${fmtEur(c.val)}</div>
+      <div style="font-size:13px;color:var(--success);font-weight:600;margin-top:2px"><i class="ti ti-coins" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i>Commission : ${fmtEur(calcCom(c))}</div>
+    </div>
+    <div class="dr-sec">
+      <div class="dr-lbl">Avancement — ${stage.name} (${stage.prob}%)</div>
+      <div style="height:4px;background:var(--border);border-radius:2px;margin:10px 0 12px;overflow:hidden"><div style="height:4px;width:${stage.prob}%;background:${stage.color};border-radius:2px"></div></div>
+      <div class="stage-btns">${STAGES.map(s=>`<button class="s-btn${c.stage===s.id?' active':''}" onclick="moveStage(${id},${s.id})" style="${c.stage===s.id?`border-color:${s.color};color:${s.color};background:${s.color}12`:''}">`+`<span style="width:8px;height:8px;border-radius:50%;background:${s.color};flex-shrink:0"></span>${s.name}</button>`).join('')}</div>
+    </div>
+    ${c.notes?`<div class="dr-sec"><div class="dr-lbl">Notes</div><div class="dr-val" style="white-space:pre-wrap;line-height:1.7">${c.notes}</div></div>`:''}
+    <div class="dr-actions">
+      <button class="dr-act" onclick="openModal('client',${id});closeDrawer()"><i class="ti ti-edit"></i> Modifier</button>
+      <button class="dr-act del" onclick="deleteClient(${id})"><i class="ti ti-trash"></i> Supprimer</button>
+    </div>`;
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawer-ov').classList.add('open');
+}
+function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('drawer-ov').classList.remove('open')}
+function moveStage(id,s){const i=clients.findIndex(x=>x.id===id);clients[i].stage=s;openDrawer(id);rerender()}
+function deleteClient(id){if(!confirm('Supprimer ce client ?'))return;clients=clients.filter(x=>x.id!==id);closeDrawer();rerender()}
+function editCurrentMandant(){openModal('company',currentCoId)}
+
+// ── MODAL ────────────────────────────────────────────────────────────────────
+function buildSwatches(){
+  const w=document.getElementById('swatches');w.innerHTML='';
+  PALETTES.forEach(p=>{
+    const b=document.createElement('button');b.className='swatch';b.type='button';
+    b.style.background=`linear-gradient(135deg,${p.c1} 50%,${p.c2} 50%)`;
+    b.title=p.style;
+    b.onclick=()=>{
+      document.getElementById('co-c1').value=p.c1;
+      document.getElementById('co-c2').value=p.c2;
+      currentStyle=p.style;
+      document.querySelectorAll('.style-btn').forEach(t=>t.classList.toggle('active',t.dataset.s===p.style));
+      document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('sel'));
+      b.classList.add('sel');updatePreview();
+    };
+    w.appendChild(b);
+  });
+}
+function pickStyle(btn){document.querySelectorAll('.style-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentStyle=btn.dataset.s;updatePreview()}
+function updatePreview(){
+  const c1=document.getElementById('co-c1').value,c2=document.getElementById('co-c2').value;
+  const th=resolveTheme({c1,c2,style:currentStyle});
+  const prev=document.getElementById('theme-prev');
+  prev.style.background=th.hBg;prev.style.color=th.hText;
+  document.getElementById('prev-name').textContent=document.getElementById('co-name').value||'Votre mandant';
+}
+
+function populateMandantSelect(){
+  const sel=document.getElementById('cl-mandant');
+  const cur=sel.value;while(sel.options.length>1)sel.remove(1);
+  companies.forEach(co=>{const o=document.createElement('option');o.value=co.id;o.textContent=co.name;sel.appendChild(o)});
+  if(cur)sel.value=cur;
+  if(currentCoId)sel.value=currentCoId;
+}
+
+function openModal(type,id=null,presetCo=null){
+  modalType=type;editId=id;
+  document.getElementById('form-company').style.display=type==='company'?'':'none';
+  document.getElementById('form-client').style.display=type==='client'?'':'none';
+  document.getElementById('modal-title').textContent=id?'Modifier':(type==='company'?'Nouveau mandant':'Nouveau client');
+  ['co-name','co-com','co-tel','co-ref','co-notes','cl-name','cl-co','cl-tel','cl-email','cl-product','cl-val','cl-notes','cl-next'].forEach(i=>{const el=document.getElementById(i);if(el)el.value=''});
+  if(type==='company'){
+    buildSwatches();currentStyle='light';
+    document.getElementById('co-c1').value='#111110';document.getElementById('co-c2').value='#f7f7f6';
+    document.querySelectorAll('.style-btn').forEach(t=>t.classList.toggle('active',t.dataset.s==='light'));
+    if(id){const co=coById(id);if(co){
+      document.getElementById('co-name').value=co.name;document.getElementById('co-sector').value=co.sector;
+      document.getElementById('co-com').value=co.com;document.getElementById('co-tel').value=co.tel||'';
+      document.getElementById('co-ref').value=co.ref||'';document.getElementById('co-notes').value=co.notes||'';
+      if(co.theme){document.getElementById('co-c1').value=co.theme.c1;document.getElementById('co-c2').value=co.theme.c2;currentStyle=co.theme.style;document.querySelectorAll('.style-btn').forEach(t=>t.classList.toggle('active',t.dataset.s===co.theme.style))}
+    }}
+    updatePreview();
+    ['co-c1','co-c2','co-name'].forEach(elId=>{const el=document.getElementById(elId);if(el)el.oninput=updatePreview});
+  }
+  if(type==='client'){
+    populateMandantSelect();
+    if(id){const c=clients.find(x=>x.id===id);
+      document.getElementById('cl-name').value=c.name;document.getElementById('cl-co').value=c.co;
+      document.getElementById('cl-tel').value=c.tel;document.getElementById('cl-email').value=c.email;
+      document.getElementById('cl-mandant').value=c.mandant;document.getElementById('cl-product').value=c.product;
+      document.getElementById('cl-val').value=c.val;document.getElementById('cl-stage-i').value=c.stage;
+      document.getElementById('cl-next').value=c.next||'';document.getElementById('cl-notes').value=c.notes;
+    }
+    if(presetCo)document.getElementById('cl-mandant').value=presetCo;
+  }
+  document.getElementById('modal-ov').classList.add('open');
+}
+function closeModal(){document.getElementById('modal-ov').classList.remove('open')}
+
+function save(){
+  if(modalType==='company'){
+    const data={name:document.getElementById('co-name').value||'Entreprise',sector:document.getElementById('co-sector').value,com:parseFloat(document.getElementById('co-com').value)||0,tel:document.getElementById('co-tel').value,ref:document.getElementById('co-ref').value,notes:document.getElementById('co-notes').value,theme:{c1:document.getElementById('co-c1').value,c2:document.getElementById('co-c2').value,style:currentStyle}};
+    if(editId){const i=companies.findIndex(x=>x.id===editId);companies[i]={...companies[i],...data}}
+    else{companies.push({id:nextCoId++,...data})}
+  }else{
+    const mandant=parseInt(document.getElementById('cl-mandant').value)||0;
+    if(!mandant){alert('Veuillez choisir un mandant.');return}
+    const data={name:document.getElementById('cl-name').value||'Client',co:document.getElementById('cl-co').value||'—',tel:document.getElementById('cl-tel').value,email:document.getElementById('cl-email').value,mandant,product:document.getElementById('cl-product').value||'',val:parseInt(document.getElementById('cl-val').value)||0,stage:parseInt(document.getElementById('cl-stage-i').value),next:document.getElementById('cl-next').value,notes:document.getElementById('cl-notes').value||''};
+    if(editId){const i=clients.findIndex(x=>x.id===editId);clients[i]={...clients[i],...data}}
+    else clients.push({id:nextClId++,...data});
+  }
+  closeModal();rerender();
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function rerender(){
+  updateStats();renderTabs();
+  if(currentCoId===null){renderOverview();}
+  else{
+    if(currentSub==='overview')renderMandantOverview();
+    if(currentSub==='pipeline')renderPipeline();
+    if(currentSub==='clients') renderClients();
+  }
+}
+
+// Init
+showViews(['all']);
+rerender();
+</script>
+</body>
+</html>
