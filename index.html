@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon CRM</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#f7f7f6;
+  --surface:#ffffff;
+  --surface-raised:#ffffff;
+  --border:#ebebea;
+  --border-strong:#d9d9d7;
+  --text:#111110;
+  --text-sec:#6f6e6b;
+  --text-muted:#b0afa9;
+  --radius-sm:8px;
+  --radius:14px;
+  --radius-lg:20px;
+  --shadow-sm:0 1px 4px rgba(0,0,0,.06),0 0 0 1px rgba(0,0,0,.04);
+  --shadow:0 4px 16px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.04);
+  --shadow-lg:0 12px 40px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);
+  --danger:#e5484d;
+  --success:#30a46c;
+}
+
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+
+/* ── LAYOUT ── */
+.app{display:grid;grid-template-columns:72px 1fr;min-height:100vh}
+
+/* ── RAIL (icônes latérales) ── */
+.rail{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:20px 0;gap:4px;position:sticky;top:0;height:100vh}
+.rail-logo{width:40px;height:40px;border-radius:12px;background:var(--text);display:flex;align-items:center;justify-content:center;color:#fff;margin-bottom:20px}
+.rail-logo i{font-size:20px}
+.rail-btn{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;border:none;background:none;cursor:pointer;color:var(--text-muted);transition:all .15s;position:relative}
+.rail-btn:hover{background:var(--bg);color:var(--text-sec)}
+.rail-btn.active{background:var(--text);color:#fff}
+.rail-btn i{font-size:20px}
+.rail-tip{position:absolute;left:56px;background:var(--text);color:#fff;font-size:12px;font-weight:500;padding:4px 10px;border-radius:8px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s;z-index:50}
+.rail-btn:hover .rail-tip{opacity:1}
+.rail-spacer{flex:1}
+
+/* ── MAIN ── */
+.main{min-width:0;display:flex;flex-direction:column}
+
+/* ── TOPBAR ── */
+.topbar{padding:20px 32px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.topbar-title{font-size:28px;font-weight:800;letter-spacing:-.5px;line-height:1.1}
+.topbar-sub{font-size:14px;color:var(--text-sec);margin-top:4px;font-weight:400}
+.topbar-actions{display:flex;gap:10px;align-items:center;padding-top:4px}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:inherit}
+.btn-dark{background:var(--text);color:#fff}
+.btn-dark:hover{background:#2c2c2a}
+.btn-ghost{background:none;border:1.5px solid var(--border-strong);color:var(--text-sec)}
+.btn-ghost:hover{background:var(--surface);color:var(--text);border-color:var(--text)}
+.btn-sm{padding:6px 14px;font-size:12px}
+.btn-icon{width:36px;height:36px;padding:0;justify-content:center;border-radius:var(--radius-sm);background:var(--bg);border:1.5px solid var(--border);color:var(--text-sec);cursor:pointer}
+.btn-icon:hover{background:var(--surface);color:var(--text)}
+
+/* ── CONTENT ── */
+.content{padding:24px 32px 48px;flex:1}
+
+/* ── STATS ── */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:32px}
+.stat{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:20px 22px;transition:box-shadow .2s}
+.stat:hover{box-shadow:var(--shadow)}
+.stat-num{font-size:32px;font-weight:800;letter-spacing:-1px;line-height:1}
+.stat-lbl{font-size:12px;color:var(--text-muted);margin-top:6px;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+.stat-pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;margin-top:8px}
+
+/* ── SECTION HEADER ── */
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px}
+.section-title{font-size:18px;font-weight:700;letter-spacing:-.3px}
+
+/* ── MANDANT CARDS ── */
+.mandant-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:32px}
+.mandant-card{background:var(--surface);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:22px;cursor:pointer;transition:all .2s;border:2px solid transparent;position:relative;overflow:hidden}
+.mandant-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px}
+.mandant-card:hover{box-shadow:var(--shadow);transform:translateY(-2px)}
+.mandant-card.open{border-color:var(--mc,#111);box-shadow:var(--shadow-lg)}
+.mc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.mc-logo{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;flex-shrink:0}
+.mc-name{font-size:16px;font-weight:700;letter-spacing:-.2px;margin-bottom:2px}
+.mc-sector{font-size:12px;color:var(--text-sec);font-weight:500}
+.mc-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;padding-top:14px;border-top:1px solid var(--border)}
+.mc-stat-val{font-size:17px;font-weight:700}
+.mc-stat-lbl{font-size:11px;color:var(--text-muted);font-weight:500;margin-top:1px}
+.mc-com-badge{position:absolute;top:18px;right:18px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
+
+/* ── MANDANT DETAIL ── */
+.mandant-detail{background:var(--surface);border-radius:var(--radius-lg);box-shadow:var(--shadow);overflow:hidden;margin-bottom:32px;animation:slideIn .2s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.md-header{padding:28px 28px 24px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.md-header-left{display:flex;align-items:center;gap:16px}
+.md-logo{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;flex-shrink:0}
+.md-name{font-size:22px;font-weight:800;letter-spacing:-.4px}
+.md-meta{font-size:13px;color:var(--text-sec);margin-top:3px;display:flex;gap:14px;flex-wrap:wrap}
+.md-meta span{display:flex;align-items:center;gap:5px}
+.md-actions{display:flex;gap:8px;padding-top:4px}
+.md-body{padding:0 28px 24px}
+.md-table-wrap{border-radius:var(--radius);border:1px solid var(--border);overflow:hidden}
+.md-empty{padding:48px;text-align:center;color:var(--text-muted)}
+.md-empty i{font-size:36px;display:block;margin-bottom:10px}
+
+/* ── TABLE ── */
+.t-table{width:100%;border-collapse:collapse;font-size:13px}
+.t-table th{text-align:left;padding:11px 16px;background:var(--bg);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);border-bottom:1px solid var(--border);white-space:nowrap}
+.t-table td{padding:13px 16px;border-bottom:1px solid var(--border);vertical-align:middle}
+.t-table tr:last-child td{border-bottom:none}
+.t-table tbody tr{cursor:pointer;transition:background .12s}
+.t-table tbody tr:hover td{background:var(--bg)}
+.name-cell strong{font-weight:600;font-size:13px}
+.name-cell span{font-size:11px;color:var(--text-muted);display:block;margin-top:1px}
+.val-cell{font-size:15px;font-weight:700;letter-spacing:-.3px}
+.com-cell{font-size:13px;font-weight:600;color:var(--success)}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.badge-dot{width:6px;height:6px;border-radius:50%}
+
+/* ── PIPELINE ── */
+.pipe-scroll{overflow-x:auto;padding-bottom:8px}
+.pipe-board{display:flex;gap:14px;min-width:max-content}
+.pipe-col{width:230px;flex-shrink:0}
+.pipe-col-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:0 4px}
+.pipe-col-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.pipe-col-count{font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;background:var(--bg);color:var(--text-muted)}
+.pipe-card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:all .15s;border:1.5px solid transparent}
+.pipe-card:hover{box-shadow:var(--shadow);transform:translateY(-1px);border-color:var(--border-strong)}
+.pc-name{font-size:13px;font-weight:700;margin-bottom:4px;letter-spacing:-.1px}
+.pc-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
+.pc-row{font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:5px;margin-top:4px}
+.pc-val{font-size:15px;font-weight:800;letter-spacing:-.4px;margin-top:10px}
+.pc-bar{height:3px;background:var(--border);border-radius:2px;margin-top:8px;overflow:hidden}
+.pc-bar-fill{height:3px;border-radius:2px;transition:width .3s}
+.pipe-add{width:100%;border:1.5px dashed var(--border-strong);background:none;border-radius:var(--radius);padding:10px;font-size:12px;font-weight:600;color:var(--text-muted);cursor:pointer;margin-top:4px;font-family:inherit;transition:all .15s}
+.pipe-add:hover{background:var(--surface);color:var(--text-sec);border-color:var(--text-sec)}
+
+/* ── FILTER BAR ── */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;align-items:center}
+.filter-bar select,.filter-bar input{font-size:13px;font-weight:500;padding:8px 14px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface);color:var(--text);outline:none;font-family:inherit;box-shadow:var(--shadow-sm)}
+.filter-bar input{flex:1;min-width:180px}
+.filter-bar select:focus,.filter-bar input:focus{border-color:var(--text)}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);padding:28px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:modalIn .2s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
+.modal-title{font-size:20px;font-weight:800;letter-spacing:-.4px;margin-bottom:22px}
+.f-row{margin-bottom:14px}
+.f-row label{font-size:12px;font-weight:600;color:var(--text-sec);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+.f-row input,.f-row select,.f-row textarea{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--bg);color:var(--text);outline:none;font-family:inherit;transition:border-color .15s}
+.f-row input:focus,.f-row select:focus,.f-row textarea:focus{border-color:var(--text);background:var(--surface)}
+.f-row textarea{resize:vertical;min-height:72px}
+.f-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:24px;padding-top:20px;border-top:1px solid var(--border)}
+
+/* THÈME PICKER */
+.theme-section{margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
+.theme-section-title{font-size:13px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.palettes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.palette-swatch{width:36px;height:36px;border-radius:10px;cursor:pointer;border:3px solid transparent;transition:all .15s;position:relative;overflow:hidden}
+.palette-swatch:hover{transform:scale(1.1)}
+.palette-swatch.sel{border-color:var(--text);box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--text)}
+.color-row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.color-pick{display:flex;flex-direction:column;gap:6px}
+.color-pick label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em}
+.color-pick input[type=color]{width:48px;height:42px;border-radius:var(--radius-sm);border:1.5px solid var(--border);cursor:pointer;padding:3px;background:var(--bg)}
+.style-tabs{display:flex;gap:4px;margin-bottom:14px}
+.style-tab{flex:1;padding:7px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:none;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--text-sec);transition:all .15s}
+.style-tab.active{background:var(--text);color:#fff;border-color:var(--text)}
+.theme-prev{border-radius:var(--radius);padding:16px 20px;transition:all .3s;margin-top:4px}
+.theme-prev-name{font-size:15px;font-weight:800;letter-spacing:-.3px}
+.theme-prev-sub{font-size:12px;opacity:.7;margin-top:2px}
+
+/* ── DRAWER ── */
+.drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:150;backdrop-filter:blur(1px)}
+.drawer-overlay.open{display:block}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:380px;max-width:95vw;background:var(--surface);z-index:151;overflow-y:auto;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);box-shadow:var(--shadow-lg)}
+.drawer.open{transform:translateX(0)}
+.drawer-top{padding:24px 24px 0}
+.drawer-close{float:right;background:var(--bg);border:none;width:32px;height:32px;border-radius:var(--radius-sm);cursor:pointer;color:var(--text-sec);display:flex;align-items:center;justify-content:center;font-size:16px}
+.drawer-close:hover{background:var(--border);color:var(--text)}
+.drawer-body{padding:20px 24px 32px}
+.dr-section{padding:16px 0;border-bottom:1px solid var(--border)}
+.dr-section:last-child{border-bottom:none}
+.dr-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:8px}
+.dr-val{font-size:13px;color:var(--text);line-height:1.6}
+.dr-amount{font-size:28px;font-weight:800;letter-spacing:-.8px;margin:4px 0 2px}
+.stage-btns{display:flex;flex-direction:column;gap:5px;margin-top:10px}
+.stage-btn-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:none;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--text-sec);text-align:left;transition:all .12s}
+.stage-btn-item:hover{background:var(--bg)}
+.stage-btn-item.active{color:var(--text);background:var(--bg);border-color:var(--text)}
+.dr-actions{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.dr-act{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:var(--radius);background:var(--bg);border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--text);transition:background .12s;width:100%;text-align:left}
+.dr-act:hover{background:var(--border)}
+.dr-act.del{color:var(--danger)}
+.dr-act.del:hover{background:#fef2f2}
+
+/* ── EMPTY ── */
+.empty-state{text-align:center;padding:64px 24px;color:var(--text-muted)}
+.empty-state i{font-size:48px;opacity:.3;display:block;margin-bottom:14px}
+.empty-state p{font-size:14px;line-height:1.6}
+
+@media(max-width:768px){
+  .app{grid-template-columns:1fr}
+  .rail{display:none}
+  .topbar{padding:16px 20px 0}
+  .content{padding:16px 20px 32px}
+  .f-grid{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- RAIL -->
+<aside class="rail">
+  <div class="rail-logo"><i class="ti ti-briefcase"></i></div>
+  <button class="rail-btn active" onclick="gotoPage('mandants',this)" aria-label="Mandants">
+    <i class="ti ti-building"></i><span class="rail-tip">Mandants</span>
+  </button>
+  <button class="rail-btn" onclick="gotoPage('pipeline',this)" aria-label="Pipeline">
+    <i class="ti ti-layout-columns"></i><span class="rail-tip">Pipeline</span>
+  </button>
+  <button class="rail-btn" onclick="gotoPage('clients',this)" aria-label="Clients">
+    <i class="ti ti-users"></i><span class="rail-tip">Clients</span>
+  </button>
+  <div class="rail-spacer"></div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="page-title">Mandants</div>
+      <div class="topbar-sub" id="page-sub">Vos entreprises représentées</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost" onclick="openModal('company')"><i class="ti ti-plus"></i> Mandant</button>
+      <button class="btn btn-dark" onclick="openModal('client')"><i class="ti ti-plus"></i> Nouveau client</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat"><div class="stat-num" id="s-mandants">0</div><div class="stat-lbl">Mandants</div></div>
+      <div class="stat"><div class="stat-num" id="s-clients">0</div><div class="stat-lbl">Clients</div></div>
+      <div class="stat"><div class="stat-num" id="s-pipeline">—</div><div class="stat-lbl">Pipeline actif</div></div>
+      <div class="stat"><div class="stat-num" id="s-commissions">—</div><div class="stat-lbl">Commissions</div></div>
+      <div class="stat"><div class="stat-num" id="s-signes">0</div><div class="stat-lbl">Signés</div></div>
+    </div>
+
+    <!-- PAGE MANDANTS -->
+    <section id="page-mandants">
+      <div class="section-head">
+        <div class="section-title">Vos mandants</div>
+      </div>
+      <div class="mandant-grid" id="mandant-grid"></div>
+      <div id="mandant-detail-area"></div>
+    </section>
+
+    <!-- PAGE PIPELINE -->
+    <section id="page-pipeline" style="display:none">
+      <div class="filter-bar">
+        <select id="pipe-co" onchange="renderPipeline()"><option value="">Tous les mandants</option></select>
+        <input id="pipe-q" placeholder="Rechercher…" oninput="renderPipeline()">
+      </div>
+      <div class="pipe-scroll"><div class="pipe-board" id="pipe-board"></div></div>
+    </section>
+
+    <!-- PAGE CLIENTS -->
+    <section id="page-clients" style="display:none">
+      <div class="filter-bar">
+        <select id="cl-co" onchange="renderClients()"><option value="">Tous les mandants</option></select>
+        <select id="cl-stage-f" onchange="renderClients()"><option value="">Toutes les étapes</option></select>
+        <input id="cl-q" placeholder="Rechercher…" oninput="renderClients()">
+      </div>
+      <div style="background:var(--surface);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden">
+        <table class="t-table">
+          <thead><tr>
+            <th>Contact</th><th>Société</th><th>Mandant</th><th>Produit</th><th>Valeur</th><th>Étape</th><th>Commission</th>
+          </tr></thead>
+          <tbody id="cl-body"></tbody>
+        </table>
+        <div class="empty-state" id="cl-empty" style="display:none"><i class="ti ti-users"></i><p>Aucun client trouvé.</p></div>
+      </div>
+    </section>
+
+  </div>
+</div>
+</div>
+
+<!-- ── MODAL ── -->
+<div class="modal-overlay" id="modal-overlay">
+<div class="modal">
+  <div class="modal-title" id="modal-title">Nouveau</div>
+
+  <!-- Mandant -->
+  <div id="form-company">
+    <div class="f-row"><label>Nom de l'entreprise mandante</label><input id="co-name" placeholder="TechSolutions SA"></div>
+    <div class="f-row"><label>Secteur</label>
+      <select id="co-sector">
+        <option>Technologie / SaaS</option><option>Assurance</option><option>Immobilier</option>
+        <option>Finance</option><option>Industrie</option><option>Santé</option>
+        <option>Télécoms</option><option>Distribution</option><option>Services</option><option>Autre</option>
+      </select>
+    </div>
+    <div class="f-grid">
+      <div class="f-row"><label>Commission (%)</label><input id="co-com" type="number" min="0" max="100" step="0.5" placeholder="10"></div>
+      <div class="f-row"><label>Téléphone</label><input id="co-tel" placeholder="+33 1 00 00 00"></div>
+    </div>
+    <div class="f-row"><label>Contact référent</label><input id="co-ref" placeholder="Prénom Nom — Poste"></div>
+    <div class="f-row"><label>Notes</label><textarea id="co-notes" placeholder="Conditions, zone, catalogue…"></textarea></div>
+
+    <div class="theme-section">
+      <div class="theme-section-title"><i class="ti ti-palette" style="font-size:16px"></i> Thème visuel</div>
+      <div class="palettes" id="palettes"></div>
+      <div class="color-row">
+        <div class="color-pick"><label>Couleur principale</label><input type="color" id="co-c1" value="#111110"></div>
+        <div class="color-pick"><label>Fond / secondaire</label><input type="color" id="co-c2" value="#f7f7f6"></div>
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">Style</div>
+          <div class="style-tabs" id="style-tabs">
+            <button class="style-tab active" data-s="light" onclick="pickStyle(this)">Clair</button>
+            <button class="style-tab" data-s="dark" onclick="pickStyle(this)">Sombre</button>
+            <button class="style-tab" data-s="vivid" onclick="pickStyle(this)">Vivid</button>
+          </div>
+        </div>
+      </div>
+      <div class="theme-prev" id="theme-prev">
+        <div class="theme-prev-name" id="prev-name">Votre mandant</div>
+        <div class="theme-prev-sub" id="prev-sub">Aperçu du thème</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client -->
+  <div id="form-client" style="display:none">
+    <div class="f-grid">
+      <div class="f-row"><label>Prénom Nom</label><input id="cl-name" placeholder="Jean Martin"></div>
+      <div class="f-row"><label>Société cliente</label><input id="cl-co" placeholder="Groupe Martin SARL"></div>
+    </div>
+    <div class="f-grid">
+      <div class="f-row"><label>Téléphone</label><input id="cl-tel" placeholder="+33 6 00 00 00 00"></div>
+      <div class="f-row"><label>Email</label><input id="cl-email" placeholder="jean@exemple.fr"></div>
+    </div>
+    <div class="f-row"><label>Mandant représenté</label><select id="cl-mandant"><option value="">— Choisir —</option></select></div>
+    <div class="f-row"><label>Produit / Service</label><input id="cl-product" placeholder="Logiciel CRM, Assurance…"></div>
+    <div class="f-grid">
+      <div class="f-row"><label>Valeur (€)</label><input id="cl-val" type="number" min="0" placeholder="5000"></div>
+      <div class="f-row"><label>Étape</label>
+        <select id="cl-stage-i">
+          <option value="0">Prospection</option><option value="1">Qualification</option>
+          <option value="2">Proposition</option><option value="3">Négociation</option><option value="4">Signé</option>
+        </select>
+      </div>
+    </div>
+    <div class="f-row"><label>Prochain contact</label><input id="cl-next" type="date"></div>
+    <div class="f-row"><label>Notes</label><textarea id="cl-notes" placeholder="Contexte, besoins, décideur…"></textarea></div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
+    <button class="btn btn-dark" onclick="save()">Enregistrer</button>
+  </div>
+</div>
+</div>
+
+<!-- ── DRAWER ── -->
+<div class="drawer-overlay" id="drawer-ov" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-top"><button class="drawer-close" onclick="closeDrawer()"><i class="ti ti-x"></i></button></div>
+  <div class="drawer-body" id="drawer-body"></div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const STAGES=[
+  {id:0,name:'Prospection',   prob:10, color:'#8e8e8e'},
+  {id:1,name:'Qualification', prob:30, color:'#3b82f6'},
+  {id:2,name:'Proposition',   prob:55, color:'#f59e0b'},
+  {id:3,name:'Négociation',   prob:75, color:'#8b5cf6'},
+  {id:4,name:'Signé',         prob:100,color:'#30a46c'},
+];
+
+const PALETTES=[
+  {label:'Nuit',    c1:'#111110',c2:'#f7f7f6',style:'light'},
+  {label:'Océan',   c1:'#0369a1',c2:'#e0f2fe',style:'light'},
+  {label:'Forêt',   c1:'#15803d',c2:'#dcfce7',style:'light'},
+  {label:'Sable',   c1:'#92400e',c2:'#fef3c7',style:'light'},
+  {label:'Rose',    c1:'#9d174d',c2:'#fdf2f8',style:'light'},
+  {label:'Violet',  c1:'#6d28d9',c2:'#f5f3ff',style:'light'},
+  {label:'Ardoise', c1:'#334155',c2:'#f1f5f9',style:'light'},
+  {label:'Feu',     c1:'#ea580c',c2:'#fff7ed',style:'light'},
+  {label:'Minuit',  c1:'#818cf8',c2:'#1e1b4b',style:'dark'},
+  {label:'Émeraude',c1:'#4ade80',c2:'#052e16',style:'dark'},
+  {label:'Vivid+',  c1:'#6d28d9',c2:'#c4b5fd',style:'vivid'},
+  {label:'Corail',  c1:'#ef4444',c2:'#fef2f2',style:'vivid'},
+];
+
+let companies=[
+  {id:1,name:'TechVision Pro',sector:'Technologie / SaaS',com:12,tel:'+33 1 40 00 01',ref:'Sophie Laurent — Dir. Commerciale',notes:'Suite CRM et RH.',theme:{c1:'#0369a1',c2:'#e0f2fe',style:'light'}},
+  {id:2,name:"Assur'Flex",    sector:'Assurance',         com:8, tel:'+33 1 40 00 02',ref:'Pierre Morel — Partenariats',      notes:'Assurance pro.',  theme:{c1:'#15803d',c2:'#dcfce7',style:'light'}},
+  {id:3,name:'ImmoSud',       sector:'Immobilier',        com:5, tel:'+33 4 90 00 03',ref:'Claire Bonnet — Agence Manager',  notes:'Programmes neufs.',theme:{c1:'#92400e',c2:'#fef3c7',style:'light'}},
+];
+let clients=[
+  {id:1,name:'Marc Lefebvre',    co:'Groupe Lefebvre',    tel:'+33 6 11 22 33 44',email:'m.lefebvre@ex.fr',  mandant:1,product:'CRM Enterprise',        val:18000, stage:3,next:'2025-07-03',notes:'Décideur identifié. RDV démo le 3 juillet.'},
+  {id:2,name:'Isabelle Renaud',  co:'Cabinet Renaud',     tel:'+33 6 55 66 77 88',email:'i.renaud@ex.fr',    mandant:1,product:'Suite RH SaaS',          val:7200,  stage:2,next:'',          notes:'Intéressée par le module paie.'},
+  {id:3,name:'Thomas Garnier',   co:'SARL Garnier BTP',   tel:'+33 6 99 00 11 22',email:'t.garnier@ex.fr',   mandant:2,product:'Assurance décennale',     val:4500,  stage:1,next:'2025-07-10',notes:'Appel découverte. À recontacter.'},
+  {id:4,name:"Hôtel des Acacias",co:'Hôtel des Acacias',  tel:'+33 4 77 88 99 00',email:'direction@ex.fr',   mandant:2,product:'Assurance multirisque',   val:3200,  stage:4,next:'',          notes:'Contrat signé. Renouvellement nov. 2025.'},
+  {id:5,name:'Emma Vidal',       co:'Particulier',         tel:'+33 6 33 44 55 66',email:'emma.vidal@ex.fr', mandant:3,product:'Appartement T3 neuf',      val:210000,stage:2,next:'2025-07-15',notes:'Budget confirmé. Attend validation prêt.'},
+];
+let nextCoId=4,nextClId=6,modalType=null,editId=null,currentPage='mandants',currentStyle='light';
+
+// ── THEME ─────────────────────────────────────────────────────────────────────
+function lum(hex){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return .299*r+.587*g+.114*b}
+function mix(hex,white,t){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);const wr=white?255:0,wg=white?255:0,wb=white?255:0;return '#'+[Math.round(r+(wr-r)*t),Math.round(g+(wg-g)*t),Math.round(b+(wb-b)*t)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+function textOn(hex){return lum(hex)>140?'#111110':'#ffffff'}
+
+function resolveTheme(theme){
+  const {c1,c2,style}=theme;
+  if(style==='dark') return {hBg:c2,hText:c1,hSub:mix(c1,'#fff',0.35),acc:c1,logoBg:c1,logoText:textOn(c1),stripColor:c1,badgeBg:mix(c1,'#fff',0.88),badgeText:c1};
+  if(style==='vivid') return {hBg:c1,hText:textOn(c1),hSub:lum(c1)>140?mix(c1,'#000',0.25):mix(c1,'#fff',0.4),acc:lum(c1)>140?mix(c1,'#000',0.2):c1,logoBg:c2,logoText:textOn(c2),stripColor:lum(c1)>140?mix(c1,'#000',0.2):c2,badgeBg:c2,badgeText:c2};
+  return {hBg:c2,hText:mix(c1,'#000',0.15),hSub:c1,acc:c1,logoBg:c1,logoText:'#ffffff',stripColor:c1,badgeBg:c2,badgeText:mix(c1,'#000',0.1)};
+}
+
+function initials(name){return name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase()}
+function fmtEur(n){return n>=1000000?(n/1000000).toFixed(1)+'M €':n>=1000?(n/1000).toFixed(n>=10000?0:1)+'k €':n+' €'}
+function calcCom(c){const co=companies.find(x=>x.id===c.mandant);return co?Math.round(c.val*co.com/100):0}
+function coName(id){const co=companies.find(x=>x.id===id);return co?co.name:'—'}
+function coBadge(coId){const co=companies.find(x=>x.id===coId);if(!co||!co.theme)return{bg:'#f7f7f6',color:'#111110'};const t=resolveTheme(co.theme);return{bg:t.badgeBg,color:t.badgeText}}
+
+// ── STATS ─────────────────────────────────────────────────────────────────────
+function updateStats(){
+  const active=clients.filter(c=>c.stage<4),pipe=active.reduce((a,c)=>a+c.val,0);
+  document.getElementById('s-mandants').textContent=companies.length;
+  document.getElementById('s-clients').textContent=clients.length;
+  document.getElementById('s-pipeline').textContent=fmtEur(pipe);
+  document.getElementById('s-commissions').textContent=fmtEur(clients.reduce((a,c)=>a+calcCom(c),0));
+  document.getElementById('s-signes').textContent=clients.filter(c=>c.stage===4).length;
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+function gotoPage(page,btn){
+  currentPage=page;
+  ['mandants','pipeline','clients'].forEach(p=>document.getElementById('page-'+p).style.display=p===page?'':'none');
+  document.querySelectorAll('.rail-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const meta={mandants:['Mandants','Vos entreprises représentées'],pipeline:['Pipeline','Toutes vos affaires en cours'],clients:['Clients','Vue complète de votre portefeuille']};
+  document.getElementById('page-title').textContent=meta[page][0];
+  document.getElementById('page-sub').textContent=meta[page][1];
+  if(page==='pipeline')renderPipeline();
+  if(page==='clients')renderClients();
+}
+
+// ── MANDANTS ──────────────────────────────────────────────────────────────────
+function renderMandants(){
+  const grid=document.getElementById('mandant-grid');
+  grid.innerHTML='';
+  if(!companies.length){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1"><i class="ti ti-building"></i><p>Aucun mandant. Ajoutez votre première entreprise.</p></div>';return}
+  companies.forEach(co=>{
+    const th=resolveTheme(co.theme||{c1:'#111110',c2:'#f7f7f6',style:'light'});
+    const cls=clients.filter(c=>c.mandant===co.id);
+    const pipe=cls.filter(c=>c.stage<4).reduce((a,c)=>a+c.val,0);
+    const signed=cls.filter(c=>c.stage===4).length;
+    const card=document.createElement('div');
+    card.className='mandant-card';
+    card.style.setProperty('--mc',th.acc);
+    card.style.background=th.hBg;
+    card.innerHTML=`
+      <div style="position:absolute;top:0;left:0;right:0;height:4px;background:${th.stripColor};border-radius:${getComputedStyle(document.documentElement).getPropertyValue('--radius-lg')} ${getComputedStyle(document.documentElement).getPropertyValue('--radius-lg')} 0 0"></div>
+      <span class="mc-com-badge" style="background:${th.logoBg};color:${th.logoText}">${co.com}%</span>
+      <div class="mc-top">
+        <div>
+          <div class="mc-logo" style="background:${th.logoBg};color:${th.logoText}">${initials(co.name)}</div>
+        </div>
+      </div>
+      <div class="mc-name" style="color:${th.hText}">${co.name}</div>
+      <div class="mc-sector" style="color:${th.hSub}">${co.sector}</div>
+      <div class="mc-stats">
+        <div><div class="mc-stat-val" style="color:${th.hText}">${cls.length}</div><div class="mc-stat-lbl" style="color:${th.hSub}">clients</div></div>
+        <div><div class="mc-stat-val" style="color:${th.hText}">${fmtEur(pipe)}</div><div class="mc-stat-lbl" style="color:${th.hSub}">pipeline</div></div>
+        <div><div class="mc-stat-val" style="color:${th.hText}">${signed}</div><div class="mc-stat-lbl" style="color:${th.hSub}">signés</div></div>
+        <div><div class="mc-stat-val" style="color:${th.hText}">${fmtEur(clients.filter(c=>c.mandant===co.id).reduce((a,c)=>a+calcCom(c),0))}</div><div class="mc-stat-lbl" style="color:${th.hSub}">commissions</div></div>
+      </div>`;
+    card.onclick=()=>showMandantDetail(co.id);
+    grid.appendChild(card);
+  });
+}
+
+function showMandantDetail(coId){
+  const co=companies.find(c=>c.id===coId);
+  const th=resolveTheme(co.theme||{c1:'#111110',c2:'#f7f7f6',style:'light'});
+  const cls=clients.filter(c=>c.mandant===coId);
+  const area=document.getElementById('mandant-detail-area');
+  area.innerHTML=`
+    <div class="mandant-detail">
+      <div class="md-header" style="background:${th.hBg}">
+        <div class="md-header-left">
+          <div class="md-logo" style="background:${th.logoBg};color:${th.logoText}">${initials(co.name)}</div>
+          <div>
+            <div class="md-name" style="color:${th.hText}">${co.name}</div>
+            <div class="md-meta" style="color:${th.hSub}">
+              <span><i class="ti ti-tag" style="font-size:13px"></i>${co.sector}</span>
+              <span><i class="ti ti-percentage" style="font-size:13px"></i>${co.com}% commission</span>
+              ${co.ref?`<span><i class="ti ti-user" style="font-size:13px"></i>${co.ref}</span>`:''}
+              ${co.tel?`<span><i class="ti ti-phone" style="font-size:13px"></i>${co.tel}</span>`:''}
+            </div>
+          </div>
+        </div>
+        <div class="md-actions">
+          <button class="btn btn-sm" style="background:${th.logoBg};color:${th.logoText};border:none" onclick="openModal('company',${coId})"><i class="ti ti-edit"></i> Modifier</button>
+          <button class="btn btn-sm" style="background:${th.logoBg};color:${th.logoText};border:none" onclick="openModal('client',null,${coId})"><i class="ti ti-plus"></i> Client</button>
+        </div>
+      </div>
+      <div class="md-body">
+        ${cls.length===0
+          ?`<div class="md-empty"><i class="ti ti-user-plus"></i><p>Aucun client pour ce mandant.</p></div>`
+          :`<div class="md-table-wrap"><table class="t-table"><thead><tr>
+              <th>Contact</th><th>Société</th><th>Produit</th><th>Valeur</th><th>Commission</th><th>Étape</th><th>Prochain RDV</th>
+            </tr></thead><tbody>
+            ${cls.map(c=>`<tr onclick="openDrawer(${c.id})">
+              <td class="name-cell"><strong>${c.name}</strong><span>${c.tel}</span></td>
+              <td>${c.co}</td>
+              <td style="font-size:12px;color:var(--text-sec)">${c.product}</td>
+              <td class="val-cell" style="color:${th.acc}">${fmtEur(c.val)}</td>
+              <td class="com-cell">${fmtEur(calcCom(c))}</td>
+              <td><span class="badge" style="background:${STAGES[c.stage].color}18;color:${STAGES[c.stage].color}"><span class="badge-dot" style="background:${STAGES[c.stage].color}"></span>${STAGES[c.stage].name}</span></td>
+              <td style="font-size:12px;color:var(--text-muted)">${c.next||'—'}</td>
+            </tr>`).join('')}
+            </tbody></table></div>`
+        }
+      </div>
+    </div>`;
+}
+
+// ── PIPELINE ──────────────────────────────────────────────────────────────────
+function renderPipeline(){
+  const coF=parseInt(document.getElementById('pipe-co').value)||0;
+  const q=document.getElementById('pipe-q').value.toLowerCase();
+  const board=document.getElementById('pipe-board');
+  board.innerHTML='';
+  STAGES.forEach(stage=>{
+    let cards=clients.filter(c=>c.stage===stage.id);
+    if(coF)cards=cards.filter(c=>c.mandant===coF);
+    if(q)cards=cards.filter(c=>c.name.toLowerCase().includes(q)||c.co.toLowerCase().includes(q));
+    const col=document.createElement('div');
+    col.className='pipe-col';
+    col.innerHTML=`<div class="pipe-col-head">
+      <span class="pipe-col-title" style="color:${stage.color}">${stage.name}</span>
+      <span class="pipe-col-count">${cards.length}</span>
+    </div>`;
+    cards.forEach(c=>{
+      const co=companies.find(x=>x.id===c.mandant);
+      const th=co&&co.theme?resolveTheme(co.theme):{acc:'#111110',badgeBg:'#f7f7f6',badgeText:'#111110'};
+      const card=document.createElement('div');
+      card.className='pipe-card';
+      card.onclick=()=>openDrawer(c.id);
+      card.innerHTML=`
+        <div class="pc-name">${c.name}</div>
+        <span class="pc-badge" style="background:${th.badgeBg};color:${th.badgeText}">${coName(c.mandant)}</span>
+        <div class="pc-row"><i class="ti ti-building" style="font-size:12px"></i>${c.co}</div>
+        <div class="pc-row"><i class="ti ti-package" style="font-size:12px"></i>${c.product}</div>
+        ${c.next?`<div class="pc-row"><i class="ti ti-calendar" style="font-size:12px"></i>${c.next}</div>`:''}
+        <div class="pc-val" style="color:${th.acc}">${fmtEur(c.val)}</div>
+        <div class="pc-bar"><div class="pc-bar-fill" style="width:${stage.prob}%;background:${stage.color}"></div></div>`;
+      col.appendChild(card);
+    });
+    const ab=document.createElement('button');ab.className='pipe-add';ab.textContent='+ Ajouter un client';
+    ab.onclick=()=>{openModal('client');document.getElementById('cl-stage-i').value=stage.id};
+    col.appendChild(ab);board.appendChild(col);
+  });
+}
+
+// ── TABLE CLIENTS ─────────────────────────────────────────────────────────────
+function renderClients(){
+  const coF=parseInt(document.getElementById('cl-co').value)||0;
+  const stF=document.getElementById('cl-stage-f').value;
+  const q=document.getElementById('cl-q').value.toLowerCase();
+  let rows=clients.slice();
+  if(coF)rows=rows.filter(c=>c.mandant===coF);
+  if(stF!=='')rows=rows.filter(c=>c.stage===parseInt(stF));
+  if(q)rows=rows.filter(c=>c.name.toLowerCase().includes(q)||c.co.toLowerCase().includes(q)||c.product.toLowerCase().includes(q));
+  const tbody=document.getElementById('cl-body');tbody.innerHTML='';
+  document.getElementById('cl-empty').style.display=rows.length?'none':'';
+  rows.forEach(c=>{
+    const co=companies.find(x=>x.id===c.mandant);
+    const th=co&&co.theme?resolveTheme(co.theme):{acc:'#111110',badgeBg:'#f7f7f6',badgeText:'#111110'};
+    const tr=document.createElement('tr');tr.onclick=()=>openDrawer(c.id);
+    tr.innerHTML=`
+      <td class="name-cell"><strong>${c.name}</strong><span>${c.tel}</span></td>
+      <td>${c.co}</td>
+      <td><span class="badge" style="background:${th.badgeBg};color:${th.badgeText}">${coName(c.mandant)}</span></td>
+      <td style="font-size:12px;color:var(--text-sec)">${c.product}</td>
+      <td class="val-cell" style="color:${th.acc}">${fmtEur(c.val)}</td>
+      <td><span class="badge" style="background:${STAGES[c.stage].color}18;color:${STAGES[c.stage].color}"><span class="badge-dot" style="background:${STAGES[c.stage].color}"></span>${STAGES[c.stage].name}</span></td>
+      <td class="com-cell">${fmtEur(calcCom(c))}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ── DRAWER ────────────────────────────────────────────────────────────────────
+function openDrawer(id){
+  const c=clients.find(x=>x.id===id);
+  const stage=STAGES[c.stage];
+  const co=companies.find(x=>x.id===c.mandant);
+  const th=co&&co.theme?resolveTheme(co.theme):{acc:'#111110',hBg:'#f7f7f6',hText:'#111110',logoBg:'#111110',logoText:'#fff',badgeBg:'#f7f7f6',badgeText:'#111110'};
+  document.getElementById('drawer-body').innerHTML=`
+    <div style="background:${th.hBg};margin:-20px -24px 20px;padding:24px;border-radius:0">
+      <div style="font-size:22px;font-weight:800;letter-spacing:-.5px;color:${th.hText};margin-bottom:4px">${c.name}</div>
+      <div style="font-size:13px;color:${th.hSub||th.hText};opacity:.75;margin-bottom:10px">${c.co}</div>
+      <span class="badge" style="background:${th.logoBg};color:${th.logoText}">${coName(c.mandant)}</span>
+    </div>
+
+    <div class="dr-section">
+      <div class="dr-label">Contact</div>
+      <div class="dr-val"><i class="ti ti-phone" style="font-size:13px;margin-right:6px;color:var(--text-muted)"></i>${c.tel||'—'}</div>
+      <div class="dr-val" style="margin-top:5px"><i class="ti ti-mail" style="font-size:13px;margin-right:6px;color:var(--text-muted)"></i>${c.email||'—'}</div>
+      ${c.next?`<div class="dr-val" style="margin-top:5px"><i class="ti ti-calendar" style="font-size:13px;margin-right:6px;color:var(--text-muted)"></i>Prochain contact : <strong>${c.next}</strong></div>`:''}
+    </div>
+
+    <div class="dr-section">
+      <div class="dr-label">Affaire — ${c.product}</div>
+      <div class="dr-amount" style="color:${th.acc}">${fmtEur(c.val)}</div>
+      <div style="font-size:13px;color:var(--success);font-weight:600"><i class="ti ti-coins" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i>Commission : ${fmtEur(calcCom(c))}</div>
+    </div>
+
+    <div class="dr-section">
+      <div class="dr-label">Étape — ${stage.name} (${stage.prob}%)</div>
+      <div style="height:4px;background:var(--border);border-radius:2px;margin:10px 0 12px;overflow:hidden"><div style="height:4px;width:${stage.prob}%;background:${stage.color};border-radius:2px"></div></div>
+      <div class="stage-btns">
+        ${STAGES.map(s=>`<button class="stage-btn-item${c.stage===s.id?' active':''}" onclick="moveStage(${id},${s.id})" style="${c.stage===s.id?`border-color:${s.color};color:${s.color};background:${s.color}10`:''}">
+          <span style="width:8px;height:8px;border-radius:50%;background:${s.color};flex-shrink:0"></span>${s.name}
+        </button>`).join('')}
+      </div>
+    </div>
+
+    ${c.notes?`<div class="dr-section"><div class="dr-label">Notes</div><div class="dr-val" style="white-space:pre-wrap;line-height:1.7">${c.notes}</div></div>`:''}
+
+    <div class="dr-actions">
+      <button class="dr-act" onclick="openModal('client',${id});closeDrawer()"><i class="ti ti-edit"></i> Modifier</button>
+      <button class="dr-act del" onclick="deleteClient(${id})"><i class="ti ti-trash"></i> Supprimer</button>
+    </div>`;
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawer-ov').classList.add('open');
+}
+function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('drawer-ov').classList.remove('open')}
+function moveStage(id,s){const i=clients.findIndex(x=>x.id===id);clients[i].stage=s;openDrawer(id);render()}
+function deleteClient(id){if(!confirm('Supprimer ce client ?'))return;clients=clients.filter(x=>x.id!==id);closeDrawer();render()}
+
+// ── MODAL ────────────────────────────────────────────────────────────────────
+function buildPalettes(){
+  const wrap=document.getElementById('palettes');wrap.innerHTML='';
+  PALETTES.forEach((p,i)=>{
+    const btn=document.createElement('button');
+    btn.className='palette-swatch';btn.title=p.label;btn.type='button';
+    btn.style.background=`linear-gradient(135deg,${p.c1} 50%,${p.c2} 50%)`;
+    btn.onclick=()=>{
+      document.getElementById('co-c1').value=p.c1;
+      document.getElementById('co-c2').value=p.c2;
+      document.querySelectorAll('.style-tab').forEach(t=>{t.classList.toggle('active',t.dataset.s===p.style)});
+      currentStyle=p.style;
+      document.querySelectorAll('.palette-swatch').forEach(b=>b.classList.remove('sel'));
+      btn.classList.add('sel');
+      updatePreview();
+    };
+    wrap.appendChild(btn);
+  });
+}
+function pickStyle(btn){
+  document.querySelectorAll('.style-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');currentStyle=btn.dataset.s;updatePreview();
+}
+function updatePreview(){
+  const c1=document.getElementById('co-c1').value,c2=document.getElementById('co-c2').value;
+  const th=resolveTheme({c1,c2,style:currentStyle});
+  const name=document.getElementById('co-name').value||'Votre mandant';
+  const prev=document.getElementById('theme-prev');
+  prev.style.background=th.hBg;prev.style.color=th.hText;
+  document.getElementById('prev-name').textContent=name;
+  document.getElementById('prev-sub').style.color=th.hSub||th.hText;
+}
+
+function populateSelects(){
+  ['cl-mandant','pipe-co','cl-co'].forEach(id=>{
+    const sel=document.getElementById(id);if(!sel)return;
+    const cur=sel.value;while(sel.options.length>1)sel.remove(1);
+    companies.forEach(co=>{const o=document.createElement('option');o.value=co.id;o.textContent=co.name;sel.appendChild(o)});
+    if(cur)sel.value=cur;
+  });
+  const ss=document.getElementById('cl-stage-f');if(!ss)return;
+  while(ss.options.length>1)ss.remove(1);
+  STAGES.forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=s.name;ss.appendChild(o)});
+}
+
+function openModal(type,id=null,presetCo=null){
+  modalType=type;editId=id;
+  document.getElementById('form-company').style.display=type==='company'?'':'none';
+  document.getElementById('form-client').style.display=type==='client'?'':'none';
+  document.getElementById('modal-title').textContent=id?'Modifier':(type==='company'?'Nouveau mandant':'Nouveau client');
+  populateSelects();
+  ['co-name','co-com','co-tel','co-ref','co-notes','cl-name','cl-co','cl-tel','cl-email','cl-product','cl-val','cl-notes','cl-next'].forEach(i=>{const el=document.getElementById(i);if(el)el.value=''});
+  if(type==='company'){
+    buildPalettes();currentStyle='light';
+    document.getElementById('co-c1').value='#111110';document.getElementById('co-c2').value='#f7f7f6';
+    document.querySelectorAll('.style-tab').forEach(t=>t.classList.toggle('active',t.dataset.s==='light'));
+    if(id){
+      const co=companies.find(x=>x.id===id);
+      document.getElementById('co-name').value=co.name;document.getElementById('co-sector').value=co.sector;
+      document.getElementById('co-com').value=co.com;document.getElementById('co-tel').value=co.tel||'';
+      document.getElementById('co-ref').value=co.ref||'';document.getElementById('co-notes').value=co.notes||'';
+      if(co.theme){document.getElementById('co-c1').value=co.theme.c1;document.getElementById('co-c2').value=co.theme.c2;currentStyle=co.theme.style;document.querySelectorAll('.style-tab').forEach(t=>t.classList.toggle('active',t.dataset.s===co.theme.style))}
+    }
+    updatePreview();
+    ['co-c1','co-c2','co-name'].forEach(elId=>{const el=document.getElementById(elId);if(el)el.oninput=updatePreview});
+  }
+  if(type==='client'&&id){
+    const c=clients.find(x=>x.id===id);
+    document.getElementById('cl-name').value=c.name;document.getElementById('cl-co').value=c.co;
+    document.getElementById('cl-tel').value=c.tel;document.getElementById('cl-email').value=c.email;
+    document.getElementById('cl-mandant').value=c.mandant;document.getElementById('cl-product').value=c.product;
+    document.getElementById('cl-val').value=c.val;document.getElementById('cl-stage-i').value=c.stage;
+    document.getElementById('cl-next').value=c.next||'';document.getElementById('cl-notes').value=c.notes;
+  }
+  if(presetCo)document.getElementById('cl-mandant').value=presetCo;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open')}
+
+function save(){
+  if(modalType==='company'){
+    const data={name:document.getElementById('co-name').value||'Entreprise',sector:document.getElementById('co-sector').value,com:parseFloat(document.getElementById('co-com').value)||0,tel:document.getElementById('co-tel').value,ref:document.getElementById('co-ref').value,notes:document.getElementById('co-notes').value,theme:{c1:document.getElementById('co-c1').value,c2:document.getElementById('co-c2').value,style:currentStyle}};
+    if(editId){const i=companies.findIndex(x=>x.id===editId);companies[i]={...companies[i],...data}}else companies.push({id:nextCoId++,...data});
+  }else{
+    const mandant=parseInt(document.getElementById('cl-mandant').value)||0;
+    if(!mandant){alert('Veuillez choisir un mandant.');return}
+    const data={name:document.getElementById('cl-name').value||'Client',co:document.getElementById('cl-co').value||'—',tel:document.getElementById('cl-tel').value,email:document.getElementById('cl-email').value,mandant,product:document.getElementById('cl-product').value||'',val:parseInt(document.getElementById('cl-val').value)||0,stage:parseInt(document.getElementById('cl-stage-i').value),next:document.getElementById('cl-next').value,notes:document.getElementById('cl-notes').value||''};
+    if(editId){const i=clients.findIndex(x=>x.id===editId);clients[i]={...clients[i],...data}}else clients.push({id:nextClId++,...data});
+  }
+  closeModal();render();
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function render(){
+  updateStats();renderMandants();
+  if(currentPage==='pipeline')renderPipeline();
+  if(currentPage==='clients')renderClients();
+  populateSelects();
+}
+render();
+</script>
+</body>
+</html>
